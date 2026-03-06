@@ -1,0 +1,7 @@
+{
+  "name": "craft-mcp",
+  "version": "1.1.0",
+  "description": "基于 mcporter 的 Craft.do 高级集成技能，支持文档创建、移动及 Markdown 深度写入。",
+  "author": "nanobot",
+  "entrypoint": "SKILL.md"
+}
