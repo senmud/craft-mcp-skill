@@ -130,3 +130,47 @@ mcporter call craft blocks_get pageId="文档ID"
 | 文档创建后在 Unsorted | `folderId` 未生效 | 用 `documents_move` 手动移动 |
 | MCP 连接失败 | mcporter 未运行或 Token 失效 | 运行 `mcporter list` 检查状态 |
 | ID 混淆 | Document ID = blocks_get 的 root pageId | 两者相同，不用区分 |
+| **中文乱码** | 命令行传递中文被shell解析 | 使用 `$(cat file)` 方式传递内容 |
+
+---
+
+## 🔴 中文内容写入原则（避免乱码）
+
+### ⚠️ 核心原则：使用 `$(cat file)` 方式传递内容
+
+**错误做法**（会导致中文乱码）：
+```bash
+# ❌ 错误：直接在命令行传递中文内容
+mcporter call craft markdown_add \
+  markdown="# 中文标题\n这是内容..." \
+  pageId="文档ID"
+# 这会导致中文字符被编码为 \uXXXX 格式，显示为乱码
+```
+
+**正确做法**（从文件读取，避免shell解析）：
+```bash
+# ✅ 正确：从文件读取内容
+mcporter call craft markdown_add \
+  markdown="$(cat /path/to/document.md)" \
+  position="start" \
+  pageId="文档ID"
+```
+
+### 正确的创建流程
+
+**两步走**（避免乱码）：
+```bash
+# 步骤1：创建空白文档
+mcporter call craft documents_create \
+  documents='[{"title": "Document Title"}]' \
+  destination='{"folderId": "65d64624-52fb-41d0-b318-8257adca989b"}'
+
+# 步骤2：从文件写入内容（避免乱码）
+mcporter call craft markdown_add \
+  markdown="$(cat /path/to/document.md)" \
+  position="start" \
+  pageId="文档ID"
+```
+
+**问题根因**：shell参数解析时中文字符被编码为 `\uXXXX` 格式  
+**解决方案**：从文件读取内容，绕过shell解析环节
